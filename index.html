@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Formater</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-html.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-html.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-css.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap')
+
+        
+        body {
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            font-family: "Poppins", sans-serif;
+            font-weight: 200;
+            font-style: normal;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .large-area {
+            height: 280px;
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            box-sizing: border-box;
+            color: #aaaaaa;
+            background-color: #fffaf2;
+            border: none;
+             resize: none; 
+            border-radius: 5px;
+            outline: none;
+            border: 1px solid rgb(175, 170, 170);
+            color: black;
+        }
+        
+        .mybtn {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 4px;
+        }
+        
+        .controls-button {
+            display: inline-block;
+            padding: 6px 16px;
+            margin: 3px 6px;
+            border-radius: 3px;
+            border: none;
+            outline: none;
+            background-color: #ff0318;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            /* font-weight: bold; */
+            gap: 10px;
+        }
+        
+        .controls-button:hover {
+            background-color: #2a93d5;
+        }
+        
+        @media screen and (max-width: 767px) {
+            .controls-button {
+                flex: 1;
+                /* Make buttons take up equal space in a row */
+                margin: 3px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <textarea id="inputTextArea" class="large-area large-area-input" placeholder="Enter your HTML code here..."></textarea>
+    </div>
+    <div class="mybtn">
+        <div class="controls">
+            <button type="button" class="controls-button controls-button-format">Format</button>
+            <select id="formatSpacing" class="controls-button controls-button-format-spacing">
+                <option value="2">2 space</option>
+                <option value="4">4 space</option>
+            </select>
+            <button type="button" class="controls-button controls-button-minify">Minify</button>
+            <button type="button" class="controls-button controls-button-copied">Copied</button>
+            <label class="controls-button controls-button-Upload" for="file_uploads">Upload
+                HTML file</label>
+            <input style="display: none;" type="file" id="file_uploads" name="file_uploads" accept=".html" />
+            <button type="button" class="controls-button controls-button-restart">Reset</button>
+
+        </div>
+    </div>
+    <div class="container">
+        <textarea readonly class="large-area large-area-output" placeholder="HTML Result..."></textarea>
+    </div>
+
+    <script>
+        const inputArea = document.getElementById("inputTextArea");
+        const outputArea = document.querySelector(".large-area-output");
+        const btnFormat = document.querySelector(".controls-button-format");
+        const formatSpacing = document.getElementById("formatSpacing");
+        const btnRestart = document.querySelector(".controls-button-restart");
+        const btnMinify = document.querySelector(".controls-button-minify");
+        const btnCopied = document.querySelector(".controls-button-copied");
+        const fileUploadInput = document.getElementById("file_uploads");
+        fileUploadInput.addEventListener("click", () => {
+            // Clear previously selected file when opening the file dialog
+            fileUploadInput.value = "";
+        });
+        
+        file_uploads.addEventListener('change', (event) => showUploadedText(event));
+        btnFormat.addEventListener("click", () => {
+            if (inputArea.value.trim() === "") {
+                alert("Input box is empty. Please enter HTML code.");
+            } else {
+                const spacing = formatSpacing.value;
+                const formattedHtml = formatHtml(inputArea.value, spacing);
+                outputArea.value = formattedHtml;
+            }
+        });
+        
+        
+        function formatHtml(html, spacing) {
+            const options = {
+                indent_size: parseInt(spacing),
+                indent_char: ' ',
+            };
+        
+            // Check if there is any CSS inside the HTML
+            const cssStart = html.indexOf('<style');
+            const cssEnd = html.indexOf('</style>');
+            if (cssStart !== -1 && cssEnd !== -1) {
+                // Extract and format the CSS
+                const cssToFormat = html.substring(cssStart, cssEnd + 8); // Include </style>
+                const formattedCSS = css_beautify(cssToFormat, options);
+        
+                // Replace the original CSS with the formatted CSS
+                html = html.substring(0, cssStart) + formattedCSS + html.substring(cssEnd + 8);
+            }
+        
+            // Format the remaining HTML
+            const formatted = html_beautify(html, options);
+            return formatted;
+        }
+        
+        
+        btnRestart.addEventListener("click", () => {
+            inputArea.value = "";
+            outputArea.value = "";
+        });
+        
+        btnMinify.addEventListener("click", () => {
+            if (inputArea.value.trim() === "") {
+                alert("Input box is empty. Please enter HTML code.");
+            } else {
+                const minifiedHtml = minifyHtml(inputArea.value);
+                outputArea.value = minifiedHtml;
+            }
+        });
+        
+        // Function to minify HTML aggressively (removes all white spaces)
+        function minifyHtml(html) {
+            const minified = html.replace(/\s+/g, '');
+            return minified;
+        }
+        
+        const clipboard = navigator.clipboard;
+        
+        btnCopied.addEventListener("click", () => {
+            if (outputArea.value) {
+                // Copy the result to the clipboard
+                clipboard.writeText(outputArea.value)
+                    .then(() => {
+                        // Change the button color to indicate it's copied
+                        btnCopied.style.backgroundColor = "#00705a"; // Change to a different color
+                        btnCopied.style.color = "white"; // Change text color
+                        btnCopied.textContent = "Copied!";
+                        setTimeout(() => {
+                            // Revert the button color
+                            btnCopied.style.backgroundColor = "#a2cf6e"; // Original color
+                            btnCopied.style.color = "black"; // Original text color
+                            btnCopied.textContent = "Copy";
+                        }, 1000);
+                    })
+                    .catch((error) => {
+                        console.error("Failed to copy: ", error);
+                        // Handle copy error
+                    });
+            }
+        });
+        
+        function showUploadedText(event) {
+            // inputTextArea.innerText = event.target.file.name;
+            // console.log("triggered")
+            // const res = URL.createObjectURL(file_uploads.files[0]);
+            // console.log(res)
+            // window.open(res, "_blank");
+            // console.log("triggered")
+        
+            const selectedFile = file_uploads.files[0];
+        
+            if (selectedFile) {
+                // Read the content of the file
+                const reader = new FileReader();
+        
+                reader.onload = function (e) {
+                    // Display the content in the fileContent element
+                    inputTextArea.value = e.target.result;
+                };
+        
+                // Read the file as text
+                reader.readAsText(selectedFile);
+            } else {
+                // No file selected, clear the content
+                inputTextArea.textContent = 'No file selected';
+            }
+        } 
+    </script>
+</body>
+
+</html>
